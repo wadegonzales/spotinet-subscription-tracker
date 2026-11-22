@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Family Plan Tracker</title>
+<meta name="theme-color" content="#0b0b0b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Plan Tracker">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap">
+<style>
+:root{--bg:#0b0b0b;--bg2:#121212;--card:#181818;--card2:#222;--text:#f4f4f4;--mute:#9a9a9a;--line:#2a2a2a;--ac:#1ed760;--ac-ink:#04130a;--glow:rgba(30,215,96,.28);--r:18px;--rb:999px;--hf:"Plus Jakarta Sans",system-ui,sans-serif;--ht:none;--hs:26px;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-plan="netflix"]{--bg:#000;--bg2:#0a0a0a;--card:#141414;--card2:#1f1f1f;--ac:#e50914;--ac-ink:#fff;--glow:rgba(229,9,20,.32);--r:6px;--rb:4px;--hf:"Bebas Neue",Impact,sans-serif;--ht:uppercase;--hs:34px;--line:#262626}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:radial-gradient(120% 60% at 50% -10%,var(--glow),transparent 60%),var(--bg);color:var(--text);font:15px/1.4 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;transition:background .4s}
+main{max-width:560px;margin:0 auto;padding:16px 16px 60px}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+button:active{transform:scale(.97)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--bg2);border:1px solid var(--line);padding:5px;border-radius:var(--r);margin-bottom:18px}
+.tab{padding:11px 8px;border-radius:calc(var(--r) - 4px);font-weight:700;color:var(--mute);display:flex;align-items:center;justify-content:center;gap:8px}
+.tab i{width:9px;height:9px;border-radius:50%;background:currentColor;opacity:.5}
+.tab.on{color:#fff}
+.tab[data-p="spotify"].on{background:#1ed760;color:#04130a;border-radius:999px}
+.tab[data-p="netflix"].on{background:#e50914;color:#fff;border-radius:4px}
+.tab[data-p="spotify"].on i,.tab[data-p="netflix"].on i{opacity:1;background:currentColor}
+.head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px}
+.title{font-family:var(--hf);text-transform:var(--ht);font-size:var(--hs);font-weight:800;line-height:1;letter-spacing:.01em}
+.title small{display:block;font-family:"Plus Jakarta Sans",sans-serif;text-transform:none;font-size:12px;font-weight:500;color:var(--mute);letter-spacing:0;margin-top:6px}
+.mon{display:flex;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:var(--rb);padding:3px}
+.mon button{width:30px;height:30px;border-radius:var(--rb);color:var(--mute);font-size:18px}
+.mon span{font-size:13px;font-weight:700;min-width:84px;text-align:center}
+.hero{display:flex;align-items:center;gap:18px;background:linear-gradient(135deg,var(--glow),transparent 70%),var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.ring{--pct:0;width:92px;height:92px;border-radius:50%;flex:none;background:conic-gradient(var(--ac) calc(var(--pct)*1%),var(--card2) 0);display:grid;place-items:center;transition:.4s}
+.ring div{width:72px;height:72px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-family:var(--hf);font-size:24px;font-weight:800}
+.hero .big{font-family:var(--hf);text-transform:var(--ht);font-size:30px;font-weight:800;line-height:1}
+.hero .lbl{color:var(--mute);font-size:12px;margin-top:6px}
+.hero .left{margin-top:8px;font-size:13px;font-weight:700;color:var(--ac)}
+.filters{display:flex;gap:8px;margin-bottom:12px;align-items:center}
+.f{padding:8px 15px;border-radius:var(--rb);background:var(--card);border:1px solid var(--line);color:var(--mute);font-size:13px;font-weight:700}
+.f.on{background:var(--text);color:#000;border-color:var(--text)}
+.copy{margin-left:auto;color:var(--ac);font-size:13px;font-weight:700;padding:8px 4px}
+.row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:11px 12px;margin-bottom:8px}
+.row.paid{border-color:transparent;background:linear-gradient(90deg,var(--glow),transparent 55%),var(--card)}
+.av{width:42px;height:42px;border-radius:50%;background:var(--card2);display:grid;place-items:center;font-weight:800;flex:none;color:var(--ac)}
+:root[data-plan="netflix"] .av{border-radius:6px}
+.who{flex:1;min-width:0}
+.who b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who span{font-size:12px;color:var(--mute)}
+.row.paid .who span{color:var(--ac)}
+.pay{padding:10px 16px;border-radius:var(--rb);font-weight:800;font-size:13px;background:var(--card2);color:var(--text);border:1px solid var(--line);white-space:nowrap}
+.row.paid .pay{background:var(--ac);color:var(--ac-ink);border-color:transparent}
+.x{color:var(--mute);width:28px;height:28px;border-radius:50%;font-size:13px;flex:none}
+.x.arm{background:#c0392b;color:#fff;width:auto;padding:0 10px;border-radius:var(--rb)}
+.add{display:flex;gap:8px;margin:16px 0}
+input{font:inherit;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:var(--rb);padding:12px 16px;min-width:0;outline:none}
+input:focus{border-color:var(--ac)}
+.add input{flex:1}
+.cta{background:var(--ac);color:var(--ac-ink);font-weight:800;padding:12px 20px;border-radius:var(--rb)}
+.empty{text-align:center;color:var(--mute);padding:34px 0}
+.set{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.set label{font-size:12px;color:var(--mute);display:flex;flex-direction:column;gap:6px}
+.stat{text-align:center;color:var(--mute);font-size:11px;margin-top:22px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:#000;padding:10px 16px;border-radius:var(--rb);font-weight:700;font-size:13px;opacity:0;pointer-events:none;transition:.25s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<main>
+  <div class="tabs">
+    <button class="tab" data-p="spotify"><i></i>Spotify</button>
+    <button class="tab" data-p="netflix"><i></i>Netflix</button>
+  </div>
+
+  <div class="head">
+    <div class="title"><span id="ptitle"></span><small id="psub"></small></div>
+    <div class="mon"><button id="prev" aria-label="Previous month">‹</button><span id="mlabel"></span><button id="next" aria-label="Next month">›</button></div>
+  </div>
+
+  <div class="hero">
+    <div class="ring" id="ring"><div id="pct">0%</div></div>
+    <div>
+      <div class="big" id="coll">₱0</div>
+      <div class="lbl" id="cnt"></div>
+      <div class="left" id="left"></div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="f on" data-f="all">All</button>
+    <button class="f" data-f="unpaid">Unpaid</button>
+    <button class="f" data-f="paid">Paid</button>
+    <button class="copy" id="copy">Copy unpaid list</button>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="add">
+    <input id="newname" placeholder="Add a person to this plan" maxlength="40">
+    <button class="cta" id="addbtn">Add</button>
+  </div>
+
+  <div class="set">
+    <label><span id="plabel"></span><input id="price" type="number" inputmode="decimal" min="0" placeholder="0"></label>
+  </div>
+  <div class="stat" id="status">Spotify Family · Netflix Family</div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const PLANS={spotify:{n:"Spotify",sub:"Family plan · who’s paid"},netflix:{n:"Netflix",sub:"Family plan · who’s paid"}};
+const LS="family-tracker-v1",LP="family-tracker-plan";
+let state={members:[],prices:{spotify:0,netflix:0},paid:{}};
+let plan="spotify",filter="all",month=new Date().toISOString().slice(0,7);
+let dbDoc=null,armed=null,saveTimer=null;
+try{const s=localStorage.getItem(LS);if(s)state=Object.assign(state,JSON.parse(s))}catch(e){}
+const h=location.hash.slice(1);
+try{plan=PLANS[h]?h:(PLANS[localStorage.getItem(LP)]?localStorage.getItem(LP):"spotify")}catch(e){plan=PLANS[h]?h:"spotify"}
+
+const $=id=>document.getElementById(id);
+const uid=()=>Math.random().toString(36).slice(2,9);
+const peso=n=>"₱"+Number(n||0).toLocaleString("en-PH",{maximumFractionDigits:2});
+const key=m=>m+"|"+plan+"|"+month;
+const inPlan=m=>m.plans?.[plan]!==false;
+
+function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),1800)}
+function shift(d){const[y,m]=month.split("-").map(Number);const dt=new Date(y,m-1+d,1);month=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0");render()}
+function persist(){
+  try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}
+  if(!dbDoc)return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{dbDoc.set(JSON.parse(JSON.stringify(state))).catch(()=>{$("status").textContent="Couldn’t sync, saved on this device only"})},400);
+}
+function setPlan(p){plan=p;filter="all";armed=null;try{localStorage.setItem(LP,p)}catch(e){}try{location.hash=p}catch(e){}render()}
+
+function render(){
+  document.documentElement.dataset.plan=plan;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.p===plan));
+  document.querySelectorAll(".f").forEach(t=>t.classList.toggle("on",t.dataset.f===filter));
+  $("ptitle").textContent=PLANS[plan].n;
+  $("psub").textContent=PLANS[plan].sub;
+  const[y,m]=month.split("-");
+  $("mlabel").textContent=new Date(y,m-1,1).toLocaleString("en",{month:"short",year:"numeric"});
+  $("plabel").textContent=PLANS[plan].n+" share per person (₱ / month)";
+  if(document.activeElement!==$("price"))$("price").value=state.prices[plan]||"";
+
+  const all=state.members.filter(inPlan);
+  const paidN=all.filter(x=>state.paid[key(x.id)]).length;
+  const price=state.prices[plan]||0;
+  const pct=all.length?Math.round(paidN/all.length*100):0;
+  $("ring").style.setProperty("--pct",pct);
+  $("pct").textContent=pct+"%";
+  $("coll").textContent=peso(paidN*price);
+  $("cnt").textContent=paidN+" of "+all.length+" paid this month";
+  $("left").textContent=all.length-paidN>0?peso((all.length-paidN)*price)+" still to collect":(all.length?"All paid 🎉":"");
+
+  const shown=all.filter(x=>filter==="all"||(filter==="paid")===!!state.paid[key(x.id)]);
+  const list=$("list");list.innerHTML="";
+  if(!shown.length){list.innerHTML='<div class="empty">'+(all.length?"Nobody here.":"No one on "+PLANS[plan].n+" yet. Add the first person below.")+"</div>";return}
+  shown.forEach(mm=>{
+    const isPaid=!!state.paid[key(mm.id)];
+    const row=document.createElement("div");row.className="row"+(isPaid?" paid":"");
+    const av=document.createElement("div");av.className="av";av.textContent=(mm.name.trim()[0]||"?").toUpperCase();
+    const who=document.createElement("div");who.className="who";
+    const nm=document.createElement("b");nm.textContent=mm.name;
+    const st=document.createElement("span");st.textContent=isPaid?"Paid":"Unpaid"+(price?" · "+peso(price):"");
+    who.append(nm,st);
+    const pay=document.createElement("button");pay.className="pay";pay.textContent=isPaid?"✓ Paid":"Mark paid";
+    pay.onclick=()=>{if(isPaid)delete state.paid[key(mm.id)];else state.paid[key(mm.id)]=true;persist();render()};
+    const x=document.createElement("button");x.className="x"+(armed===mm.id?" arm":"");x.textContent=armed===mm.id?"Remove?":"✕";
+    x.setAttribute("aria-label","Remove from "+PLANS[plan].n);
+    x.onclick=()=>{
+      if(armed===mm.id){
+        mm.plans=Object.assign({spotify:true,netflix:true},mm.plans);mm.plans[plan]=false;
+        if(!mm.plans.spotify&&!mm.plans.netflix)state.members=state.members.filter(z=>z.id!==mm.id);
+        armed=null;persist();
+      }else{armed=mm.id;setTimeout(()=>{if(armed===mm.id){armed=null;render()}},3000)}
+      render()};
+    row.append(av,who,pay,x);list.appendChild(row);
+  });
+}
+
+function addMember(){
+  const v=$("newname").value.trim();if(!v)return;
+  const ex=state.members.find(z=>z.name.toLowerCase()===v.toLowerCase());
+  if(ex){ex.plans=Object.assign({spotify:true,netflix:true},ex.plans);ex.plans[plan]=true}
+  else state.members.push({id:uid(),name:v,plans:{spotify:plan==="spotify",netflix:plan==="netflix"}});
+  $("newname").value="";persist();render();
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>setPlan(t.dataset.p));
+document.querySelectorAll(".f").forEach(t=>t.onclick=()=>{filter=t.dataset.f;render()});
+$("prev").onclick=()=>shift(-1);$("next").onclick=()=>shift(1);
+$("addbtn").onclick=addMember;
+$("newname").addEventListener("keydown",e=>{if(e.key==="Enter")addMember()});
+$("price").addEventListener("change",e=>{state.prices[plan]=parseFloat(e.target.value)||0;persist();render()});
+$("copy").onclick=async()=>{
+  const names=state.members.filter(inPlan).filter(x=>!state.paid[key(x.id)]).map(x=>x.name);
+  if(!names.length){toast("Everyone has paid");return}
+  const txt=PLANS[plan].n+" "+$("mlabel").textContent+" – unpaid:\n"+names.join("\n");
+  try{await navigator.clipboard.writeText(txt);toast("Copied "+names.length+" names")}catch(e){toast("Couldn’t copy on this device")}
+};
+window.addEventListener("hashchange",()=>{const p=location.hash.slice(1);if(PLANS[p]&&p!==plan){plan=p;filter="all";render()}});
+
+render();
+(async()=>{
+  try{
+    const db=await claude.use("db");if(!db)return;
+    dbDoc=db.doc("tracker/main");let first=true;
+    dbDoc.onSnapshot(snap=>{
+      if(snap.exists){state=Object.assign({members:[],prices:{spotify:0,netflix:0},paid:{}},JSON.parse(JSON.stringify(snap.data())));try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}render()}
+      else if(first&&state.members.length){persist()}
+      first=false;$("status").textContent="Synced across your devices";
+    },()=>{$("status").textContent="Offline, saved on this device"});
+  }catch(e){}
+})();
+</script>
+</body>
+</html>

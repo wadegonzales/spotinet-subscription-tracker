@@ -37,7 +37,7 @@ button:active{transform:scale(.97)}
 .mon button{width:30px;height:30px;border-radius:var(--rb);color:var(--mute);font-size:18px}
 .mon span{font-size:13px;font-weight:700;min-width:84px;text-align:center}
 .hero{display:flex;align-items:center;gap:18px;background:linear-gradient(135deg,var(--glow),transparent 70%),var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px}
-.ring{--pct:0;width:92px;height:92px;border-radius:50%;flex:none;background:conic-gradient(var(--ac) calc(var(--pct)*1%),var(--card2) 0);display:grid;place-items:center;transition:.4s}
+.ring{--pct:0;width:92px;height:92px;border-radius:50%;flex:none;background:conic-gradient(var(--ac) calc(var(--pct)*1%),var(--card2) 0);display:grid;place-items:center;transition:--pct .7s cubic-bezier(.2,.8,.2,1)}
 .ring div{width:72px;height:72px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-family:var(--hf);font-size:24px;font-weight:800}
 .hero .big{font-family:var(--hf);text-transform:var(--ht);font-size:30px;font-weight:800;line-height:1}
 .hero .lbl{color:var(--mute);font-size:12px;margin-top:6px}
@@ -122,22 +122,58 @@ input:focus{border-color:var(--ac)}
   .side1{grid-area:a}
   .side2{grid-area:c;align-self:start}
   .panel{grid-area:b;align-self:start;position:sticky;top:28px;height:calc(100vh - 56px);display:flex;flex-direction:column;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:20px}
-  .tabs{position:static;backdrop-filter:none;background:var(--bg2)}
+  .tabs{position:relative;backdrop-filter:none;background:var(--bg2)}
   .title{font-size:calc(var(--hs) + 8px)}
   .hero{padding:24px}
   .ring{width:120px;height:120px}
   .ring div{width:94px;height:94px;font-size:30px}
   .hero .big{font-size:38px}
   .filters{flex:none;margin-bottom:16px}
-  #list{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px;align-content:start;padding-right:4px}
+  #list{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:1fr;gap:10px;align-content:start;padding-right:4px}
   #list .row{margin-bottom:0}
 }
+
+@property --pct{syntax:"<number>";inherits:false;initial-value:0}
+@property --bg{syntax:"<color>";inherits:true;initial-value:#0b0b0b}
+@property --bg2{syntax:"<color>";inherits:true;initial-value:#121212}
+@property --card{syntax:"<color>";inherits:true;initial-value:#181818}
+@property --card2{syntax:"<color>";inherits:true;initial-value:#222222}
+@property --line{syntax:"<color>";inherits:true;initial-value:#2a2a2a}
+@property --ac{syntax:"<color>";inherits:true;initial-value:#1ed760}
+@property --ac-ink{syntax:"<color>";inherits:true;initial-value:#04130a}
+@property --glow{syntax:"<color>";inherits:true;initial-value:rgba(30,215,96,.28)}
+@property --r{syntax:"<length>";inherits:true;initial-value:18px}
+@property --rb{syntax:"<length>";inherits:true;initial-value:999px}
+:root{transition:--bg .5s ease,--bg2 .5s ease,--card .5s ease,--card2 .5s ease,--line .5s ease,--ac .5s ease,--ac-ink .5s ease,--glow .5s ease,--r .5s ease,--rb .5s ease}
+button,.row,.f,.pay,.av,.box,#duepill,.x{transition:background-color .25s,color .25s,border-color .25s,transform .15s,opacity .2s,box-shadow .3s}
+.tab{position:relative;z-index:1;transition:color .3s}
+.ind{position:absolute;z-index:0;top:5px;bottom:5px;left:5px;width:calc((100% - 16px)/2);background:var(--ac);border-radius:var(--rb);box-shadow:0 6px 24px var(--glow);transition:transform .45s cubic-bezier(.2,.9,.3,1.1),background-color .45s,border-radius .45s}
+:root[data-plan="netflix"] .ind{transform:translateX(calc(100% + 6px))}
+.tab[data-p].on{background:none}
+.tab.on{color:var(--ac-ink)}
+@keyframes rowIn{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.row.in{animation:rowIn .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*45ms)}
+@keyframes swapIn{from{opacity:0;transform:translate(var(--dx,0px),var(--dy,10px))}}
+.swap{animation:swapIn .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes popBtn{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+.pay.pop{animation:popBtn .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes flash{from{box-shadow:0 0 0 0 var(--ac)}to{box-shadow:0 0 0 14px transparent}}
+.row.just{animation:flash .7s ease-out}
+@keyframes rowOut{to{opacity:0;transform:translateX(30px) scale(.97)}}
+.row.leaving{animation:rowOut .28s ease-in forwards}
+@keyframes fadeout{to{opacity:0}}
+@keyframes down{to{transform:translateY(24px);opacity:0}}
+.modal.closing{animation:fadeout .18s forwards}
+.modal.closing .sheet{animation:down .18s forwards}
+.toast{transform:translate(-50%,14px)}
+.toast.show{transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
 <main>
   <div class="side side1">
-  <div class="tabs">
+  <div class="tabs"><span class="ind"></span>
     <button class="tab" data-p="spotify"><i></i>Spotify</button>
     <button class="tab" data-p="netflix"><i></i>Netflix</button>
   </div>
@@ -208,6 +244,7 @@ const LS="family-tracker-v1",LP="family-tracker-plan";
 let state={members:[],prices:{spotify:0,netflix:0},paid:{}};
 let plan="spotify",filter="all",month=new Date().toISOString().slice(0,7);
 let dbDoc=null,armed=null,saveTimer=null;
+let animateNext=true,enterId=null,justId=null;
 try{const s=localStorage.getItem(LS);if(s)state=Object.assign(state,JSON.parse(s))}catch(e){}
 const h=location.hash.slice(1);
 try{plan=PLANS[h]?h:(PLANS[localStorage.getItem(LP)]?localStorage.getItem(LP):"spotify")}catch(e){plan=PLANS[h]?h:"spotify"}
@@ -218,15 +255,24 @@ const peso=n=>"₱"+Number(n||0).toLocaleString("en-PH",{maximumFractionDigits:2
 const key=m=>m+"|"+plan+"|"+month;
 const inPlan=m=>m.plans?.[plan]!==false;
 
+function replay(sel,dx,dy){document.querySelectorAll(sel).forEach(e=>{e.style.setProperty("--dx",dx+"px");e.style.setProperty("--dy",dy+"px");e.classList.remove("swap");void e.offsetWidth;e.classList.add("swap")})}
+function count(el,to,fmt){
+  const from=parseFloat(el.dataset.v);el.dataset.v=to;
+  cancelAnimationFrame(el._r);
+  if(isNaN(from)||from===to||matchMedia("(prefers-reduced-motion:reduce)").matches){el.textContent=fmt(to);return}
+  const t0=performance.now(),D=550;
+  const step=t=>{const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,3);el.textContent=fmt(k<1?Math.round(from+(to-from)*e):to);if(k<1)el._r=requestAnimationFrame(step)};
+  el._r=requestAnimationFrame(step);
+}
 function toast(t){const e=$("toast");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),1800)}
-function shift(d){const[y,m]=month.split("-").map(Number);const dt=new Date(y,m-1+d,1);month=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0");render()}
+function shift(d){const[y,m]=month.split("-").map(Number);const dt=new Date(y,m-1+d,1);month=dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0");animateNext=true;render();replay(".hero,.due,.mon span",d*22,0)}
 function persist(){
   try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}
   if(!dbDoc)return;
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{dbDoc.set(JSON.parse(JSON.stringify(state))).catch(()=>{$("status").textContent="Couldn’t sync, saved on this device only"})},400);
 }
-function setPlan(p){plan=p;filter="all";armed=null;try{localStorage.setItem(LP,p)}catch(e){}try{location.hash=p}catch(e){}render()}
+function setPlan(p){if(p===plan)return;plan=p;filter="all";armed=null;animateNext=true;try{localStorage.setItem(LP,p)}catch(e){}try{location.hash=p}catch(e){}render();replay(".hero,.due,.head .title,.set",0,10)}
 
 function render(){
   document.documentElement.dataset.plan=plan;
@@ -244,8 +290,8 @@ function render(){
   const price=state.prices[plan]||0;
   const pct=all.length?Math.round(paidN/all.length*100):0;
   $("ring").style.setProperty("--pct",pct);
-  $("pct").textContent=pct+"%";
-  $("coll").textContent=peso(paidN*price);
+  count($("pct"),pct,v=>v+"%");
+  count($("coll"),paidN*price,peso);
   $("cnt").textContent=paidN+" of "+all.length+" paid this month";
   $("left").textContent=all.length-paidN>0?peso((all.length-paidN)*price)+" still to collect":(all.length?"All paid 🎉":"");
   const dd=new Date(+y,+m-1,20),td=new Date();td.setHours(0,0,0,0);
@@ -260,24 +306,29 @@ function render(){
 
   const shown=all.filter(x=>filter==="all"||(filter==="paid")===!!state.paid[key(x.id)]);
   const list=$("list");list.innerHTML="";
+  const an=animateNext,ent=enterId,jus=justId;animateNext=false;enterId=null;justId=null;
   if(!shown.length){list.innerHTML='<div class="empty">'+(all.length?"Nobody here.":"No one on "+PLANS[plan].n+" yet. Add the first person below.")+"</div>";return}
-  shown.forEach(mm=>{
+  shown.forEach((mm,ix)=>{
     const isPaid=!!state.paid[key(mm.id)];
-    const row=document.createElement("div");row.className="row"+(isPaid?" paid":"");
+    const row=document.createElement("div");row.className="row"+(isPaid?" paid":"")+(an||ent===mm.id?" in":"")+(jus===mm.id?" just":"");row.style.setProperty("--i",Math.min(ix,12));row.dataset.id=mm.id;
     const av=document.createElement("div");av.className="av";av.textContent=(mm.name.trim()[0]||"?").toUpperCase();
     const who=document.createElement("div");who.className="who";
     const nm=document.createElement("b");nm.textContent=mm.name;
     const st=document.createElement("span");st.textContent=isPaid?"Paid":"Unpaid"+(price?" · "+peso(price):"");
     who.append(nm,st);
-    const pay=document.createElement("button");pay.className="pay";pay.textContent=isPaid?"✓ Paid":"Mark paid";
-    pay.onclick=()=>{if(isPaid)delete state.paid[key(mm.id)];else state.paid[key(mm.id)]=true;persist();render()};
+    const pay=document.createElement("button");pay.className="pay"+(jus===mm.id?" pop":"");pay.textContent=isPaid?"✓ Paid":"Mark paid";
+    pay.onclick=()=>{if(isPaid)delete state.paid[key(mm.id)];else{state.paid[key(mm.id)]=true;justId=mm.id}persist();render()};
     const x=document.createElement("button");x.className="x"+(armed===mm.id?" arm":"");x.textContent=armed===mm.id?"Remove?":"✕";
     x.setAttribute("aria-label","Remove from "+PLANS[plan].n);
     x.onclick=()=>{
       if(armed===mm.id){
-        mm.plans=Object.assign({spotify:true,netflix:true},mm.plans);mm.plans[plan]=false;
-        if(!mm.plans.spotify&&!mm.plans.netflix)state.members=state.members.filter(z=>z.id!==mm.id);
-        armed=null;persist();
+        armed=null;row.classList.add("leaving");
+        setTimeout(()=>{
+          mm.plans=Object.assign({spotify:true,netflix:true},mm.plans);mm.plans[plan]=false;
+          if(!mm.plans.spotify&&!mm.plans.netflix)state.members=state.members.filter(z=>z.id!==mm.id);
+          persist();render();
+        },280);
+        return;
       }else{armed=mm.id;setTimeout(()=>{if(armed===mm.id){armed=null;render()}},3000)}
       render()};
     row.append(av,who,pay,x);list.appendChild(row);
@@ -287,17 +338,17 @@ function render(){
 function addMember(){
   const v=$("newname").value.trim();if(!v)return;
   const ex=state.members.find(z=>z.name.toLowerCase()===v.toLowerCase());
-  if(ex){ex.plans=Object.assign({spotify:true,netflix:true},ex.plans);ex.plans[plan]=true}
-  else state.members.push({id:uid(),name:v,plans:{spotify:plan==="spotify",netflix:plan==="netflix"}});
+  if(ex){ex.plans=Object.assign({spotify:true,netflix:true},ex.plans);ex.plans[plan]=true;enterId=ex.id}
+  else{const id=uid();enterId=id;state.members.push({id,name:v,plans:{spotify:plan==="spotify",netflix:plan==="netflix"}});setTimeout(()=>{const r=document.querySelector('.row[data-id="'+id+'"]');if(r)r.scrollIntoView({block:"nearest",behavior:"smooth"})},80)}
   $("newname").value="";persist();render();
 }
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>setPlan(t.dataset.p));
-document.querySelectorAll(".f").forEach(t=>t.onclick=()=>{filter=t.dataset.f;render()});
+document.querySelectorAll(".f").forEach(t=>t.onclick=()=>{filter=t.dataset.f;animateNext=true;render()});
 $("prev").onclick=()=>shift(-1);$("next").onclick=()=>shift(1);
 $("addbtn").onclick=addMember;
 $("newname").addEventListener("keydown",e=>{if(e.key==="Enter")addMember()});
 function openModal(){$("mtitle").textContent=PLANS[plan].n+" · share per person";$("price").value=state.prices[plan]||"";$("modal").hidden=false;setTimeout(()=>$("price").focus(),60)}
-function closeModal(){$("modal").hidden=true}
+function closeModal(){const m=$("modal");if(m.hidden)return;m.classList.add("closing");setTimeout(()=>{m.hidden=true;m.classList.remove("closing")},180)}
 function saveModal(){state.prices[plan]=parseFloat($("price").value)||0;persist();closeModal();render()}
 $("setbtn").onclick=openModal;$("mcancel").onclick=closeModal;$("msave").onclick=saveModal;
 $("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal()});
@@ -311,7 +362,7 @@ $("copy").onclick=async()=>{
 window.addEventListener("hashchange",()=>{const p=location.hash.slice(1);if(PLANS[p]&&p!==plan){plan=p;filter="all";render()}});
 
 render();
-(function(){const it=$("intro");if(!it)return;const hide=()=>{it.classList.add("out");setTimeout(()=>it.remove(),450)};it.onclick=hide;setTimeout(hide,1800)})();
+(function(){const it=$("intro");if(!it)return;const hide=()=>{if(it.classList.contains("out"))return;it.classList.add("out");animateNext=true;render();replay(".hero,.due,.head",0,12);setTimeout(()=>it.remove(),450)};it.onclick=hide;setTimeout(hide,1800)})();
 (async()=>{
   try{
     const db=await claude.use("db");if(!db)return;

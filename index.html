@@ -168,6 +168,14 @@ button,.row,.f,.pay,.av,.box,#duepill,.x{transition:background-color .25s,color 
 .toast{transform:translate(-50%,14px)}
 .toast.show{transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}}
+
+#login{position:fixed;inset:0;z-index:45;background:var(--bg);display:grid;place-items:center;padding:16px}
+#login[hidden]{display:none}
+#login input{width:100%;margin-bottom:10px;border-radius:var(--rb)}
+#login .cta{width:100%;margin-top:4px}
+.lerr{color:#ff6b6b;font-size:13px;min-height:18px}
+.stat button{color:var(--mute);text-decoration:underline;font-size:11px;padding:0}
+#signout[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -216,7 +224,7 @@ button,.row,.f,.pay,.av,.box,#duepill,.x{transition:background-color .25s,color 
   </div>
 
   <button class="set" id="setbtn"><span><small id="plabel"></small><b id="pshow"></b></span><em>Edit ✎</em></button>
-  <div class="stat" id="status">Spotify Family · Netflix Family</div>
+  <div class="stat"><span id="status">Spotify Family · Netflix Family</span> · <button id="signout" hidden>Sign out</button></div>
   </div>
 </main>
 <div class="toast" id="toast"></div>
@@ -230,6 +238,17 @@ button,.row,.f,.pay,.av,.box,#duepill,.x{transition:background-color .25s,color 
   </div>
 </div>
 
+<div id="login" hidden>
+  <div class="sheet">
+    <div class="mt">Sign in</div>
+    <div class="msub">Your tracker syncs across all your devices.</div>
+    <input id="lem" type="email" autocomplete="username" placeholder="Email">
+    <input id="lpw" type="password" autocomplete="current-password" placeholder="Password">
+    <div class="lerr" id="lerr"></div>
+    <button class="cta" id="lbtn">Sign in</button>
+  </div>
+</div>
+
 <div id="intro" aria-hidden="true">
   <div class="ib">
     <div class="wm"><span class="s">Spotify</span><span class="p">+</span><span class="n">NETFLIX</span></div>
@@ -238,6 +257,8 @@ button,.row,.f,.pay,.av,.box,#duepill,.x{transition:background-color .25s,color 
   </div>
 </div>
 
+<script src="/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const PLANS={spotify:{n:"Spotify",sub:"Family plan · who’s paid"},netflix:{n:"Netflix",sub:"Family plan · who’s paid"}};
 const LS="family-tracker-v1",LP="family-tracker-plan";
@@ -270,7 +291,7 @@ function persist(){
   try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}
   if(!dbDoc)return;
   clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>{dbDoc.set(JSON.parse(JSON.stringify(state))).catch(()=>{$("status").textContent="Couldn’t sync, saved on this device only"})},400);
+  saveTimer=setTimeout(()=>{saveTimer=null;dbDoc.set(JSON.parse(JSON.stringify(state))).catch(()=>{$("status").textContent="Couldn’t sync, saved on this device only"})},400);
 }
 function setPlan(p){if(p===plan)return;plan=p;filter="all";armed=null;animateNext=true;try{localStorage.setItem(LP,p)}catch(e){}try{location.hash=p}catch(e){}render();replay(".hero,.due,.head .title,.set",0,10)}
 
@@ -364,6 +385,8 @@ window.addEventListener("hashchange",()=>{const p=location.hash.slice(1);if(PLAN
 render();
 (function(){const it=$("intro");if(!it)return;const hide=()=>{if(it.classList.contains("out"))return;it.classList.add("out");animateNext=true;render();replay(".hero,.due,.head",0,12);setTimeout(()=>it.remove(),450)};it.onclick=hide;setTimeout(hide,1800)})();
 (async()=>{
+  const C=window.APP_CONFIG||{};
+  if(C.SUPABASE_URL&&C.SUPABASE_ANON_KEY&&window.supabase){await startSupabase(C);return}
   try{
     const db=await claude.use("db");if(!db)return;
     dbDoc=db.doc("tracker/main");let first=true;
@@ -374,6 +397,71 @@ render();
     },()=>{$("status").textContent="Offline, saved on this device"});
   }catch(e){}
 })();
+
+async function startSupabase(C){
+  const sb=window.supabase.createClient(C.SUPABASE_URL,C.SUPABASE_ANON_KEY);
+  const DEV=Math.random().toString(36).slice(2,10);
+  const login=$("login"),setStatus=t=>{$("status").textContent=t};
+  let uid=null,chan=null,saving=0,dirty=false;
+  const blank=()=>({members:[],prices:{spotify:0,netflix:0},paid:{}});
+  const apply=d=>{state=Object.assign(blank(),d||{});try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){}render()};
+  login.hidden=false;
+
+  async function push(){
+    saving++;
+    try{
+      state._by=DEV;
+      const{error}=await sb.from("tracker").upsert({user_id:uid,data:JSON.parse(JSON.stringify(state)),updated_at:new Date().toISOString()});
+      if(error)throw error;
+      dirty=false;setStatus("Synced across your devices");
+    }catch(e){dirty=true;throw e}
+    finally{saving--}
+  }
+  async function pull(){
+    if(saveTimer||saving)return;
+    if(dirty){try{await push()}catch(e){}return}
+    const{data,error}=await sb.from("tracker").select("data").eq("user_id",uid).maybeSingle();
+    if(error){setStatus("Offline, saved on this device");return}
+    if(data&&data.data&&Object.keys(data.data).length)apply(data.data);
+    else if(state.members.length){try{await push()}catch(e){}}
+    setStatus("Synced across your devices");
+  }
+  function subscribe(){
+    if(chan)sb.removeChannel(chan);
+    chan=sb.channel("tracker-"+uid).on("postgres_changes",{event:"*",schema:"public",table:"tracker",filter:"user_id=eq."+uid},p=>{
+      const d=p.new&&p.new.data;
+      if(!d||d._by===DEV||saveTimer||saving)return;
+      apply(d);
+    }).subscribe();
+  }
+  async function enter(session){
+    uid=session.user.id;login.hidden=true;$("signout").hidden=false;
+    dbDoc={set:()=>push()};
+    await pull();subscribe();
+  }
+
+  const{data:{session}}=await sb.auth.getSession();
+  if(session)await enter(session);
+
+  const doLogin=async()=>{
+    const em=$("lem").value.trim(),pw=$("lpw").value;
+    if(!em||!pw){$("lerr").textContent="Enter your email and password";return}
+    $("lbtn").disabled=true;$("lerr").textContent="";
+    const{data,error}=await sb.auth.signInWithPassword({email:em,password:pw});
+    $("lbtn").disabled=false;
+    if(error){$("lerr").textContent="Wrong email or password";return}
+    $("lpw").value="";await enter(data.session);
+  };
+  $("lbtn").onclick=doLogin;
+  $("lpw").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin()});
+  $("signout").onclick=async()=>{
+    await sb.auth.signOut();if(chan)sb.removeChannel(chan);chan=null;dbDoc=null;uid=null;
+    state=blank();try{localStorage.removeItem(LS)}catch(e){}
+    $("signout").hidden=true;login.hidden=false;render();
+  };
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&uid)pull()});
+  window.addEventListener("online",()=>{if(uid)pull()});
+}
 </script>
 </body>
 </html>
